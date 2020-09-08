@@ -38,24 +38,22 @@ from utils.results.zip_intermediate import zip_intermediate_selected
 
 import utils.dry_run
 
-
-print(f'Python {sys.version_info}')
+print(f'{sys.executable}\nPython {sys.version_info}')
 
 
 def initialize(context):
-
     # Add manifest.json as the manifest_json attribute
     setattr(context, 'manifest_json', load_manifest_json())
 
     log = custom_log(context)
 
-    context.log_config() # not configuring the log but logging the config
+    context.log_config()  # not configuring the log but logging the config
 
     # Instantiate custom gear dictionary to hold "gear global" info
     context.gear_dict = {}
 
     # The main command line command to be run (just command, no arguments):
-    context.gear_dict['COMMAND'] = '/code/extract_FA.py'
+    context.gear_dict['COMMAND'] = GEAR_COMMAND
 
     # Keep a list of errors and warning to print all in one place at end of log
     # Any errors will prevent the command from running and will cause exit(1)
@@ -115,49 +113,48 @@ def initialize(context):
 
     log.debug(context.gear_dict)
     # Set first part of result zip file names based on the above file safe names
-    # set_zip_head(context)
-    #
-    # # the usual BIDS path:
-    # bids_path = os.path.join(context.work_dir, 'bids')
-    # context.gear_dict['bids_path'] = bids_path
-    #
-    # # in the output/ directory, add extra analysis_id directory name for easy
-    # #  zipping of final outputs to return.
-    # context.gear_dict['output_analysisid_dir'] = \
-    #     context.output_dir + '/' + context.destination['id']
-    #
-    # # grab environment for gear
-    # with open('/tmp/gear_environ.json', 'r') as f:
-    #     environ = json.load(f)
-    #     context.gear_dict['environ'] = environ
-    #
-    #     # Add environment to log if debugging
-    #     kv = ''
-    #     for k, v in environ.items():
-    #         kv += k + '=' + v + ' '
-    #     log.debug('Environment: ' + kv)
+    set_zip_head(context)
+
+    # the usual BIDS path:
+    bids_path = os.path.join(context.work_dir, 'bids')
+    context.gear_dict['bids_path'] = bids_path
+
+    # in the output/ directory, add extra analysis_id directory name for easy
+    #  zipping of final outputs to return.
+    context.gear_dict['output_analysisid_dir'] = \
+        context.output_dir + '/' + context.destination['id']
+
+    # grab environment for gear
+    with open('/tmp/gear_environ.json', 'r') as f:
+        environ = json.load(f)
+        context.gear_dict['environ'] = environ
+
+        # Add environment to log if debugging
+        kv = ''
+        for k, v in environ.items():
+            kv += k + '=' + v + ' '
+        log.debug('Environment: ' + kv)
 
     return log
 
 
 def create_command(context, log):
-
     # Create the command and validate the given arguments
     try:
 
         # Set the actual gear command:
-        command = ['/usr/bin/python3.4',context.gear_dict['COMMAND']]
+        command = [context.gear_dict['COMMAND']]
 
         # 3 positional args: bids path, output dir, 'participant'
         # This should be done here in case there are nargs='*' arguments
         # These follow the BIDS Apps definition (https://github.com/BIDS-Apps)
         command.append(context.gear_dict['bids_path'])
         command.append(context.gear_dict['output_analysisid_dir'])
-        command.append(context.config['gear-analysis-level'])
+        command.append("participant")
 
-        # tell it where to find the license
-        command.append('--license_file')
-        command.append('/opt/freesurfer/license.txt')
+        # # tell it where to find the license
+        # command.append('--license_file')
+        # command.append('/opt/freesurfer/license.txt')
 
         # If a bids validator config file was provided, add the path
         file_path = context.get_input_path('bids_validator_config')
@@ -198,11 +195,11 @@ def set_up_data(context, log):
         # list folders: The list of folders to include (otherwise all folders) e.g. ['anat', 'func']
         # **kwargs: Additional arguments to pass to download_bids_dir
 
-        folders_to_load = ['anat']  # ONLY download files in anat/
+        folders_to_load = []
 
         if context.gear_dict['run_level'] == 'project':
 
-            log.info('Downloading BIDS for project "' + 
+            log.info('Downloading BIDS for project "' +
                      context.gear_dict['project_label'] + '"')
 
             # don't filter by subject or session, grab all
@@ -210,27 +207,27 @@ def set_up_data(context, log):
 
         elif context.gear_dict['run_level'] == 'subject':
 
-            log.info('Downloading BIDS for subject "' + 
+            log.info('Downloading BIDS for subject "' +
                      context.gear_dict['subject_code'] + '"')
 
             # only download this subject
-            download_bids(context, 
-                      subjects = [context.gear_dict['subject_code']],
-                      folders=folders_to_load)
+            download_bids(context,
+                          subjects=[context.gear_dict['subject_code']],
+                          folders=folders_to_load)
 
         elif context.gear_dict['run_level'] == 'session':
 
-            log.info('Downloading BIDS for session "' + 
+            log.info('Downloading BIDS for session "' +
                      context.gear_dict['session_label'] + '"')
 
             # only download data for this session AND this subject
-            download_bids(context, 
-                      subjects = [context.gear_dict['subject_code']],
-                      sessions = [context.gear_dict['session_label']],
-                      folders=folders_to_load)
+            download_bids(context,
+                          subjects=[context.gear_dict['subject_code']],
+                          sessions=[context.gear_dict['session_label']],
+                          folders=folders_to_load)
 
         else:
-            msg = 'This job is not being run at the project subject or ' +\
+            msg = 'This job is not being run at the project subject or ' + \
                   'session level'
             raise TypeError(msg)
 
@@ -269,14 +266,13 @@ def execute(context, log):
             utils.dry_run.pretend_it_ran(context)
 
         if ok_to_run:
-
             # Create output directory
             log.info('Creating ' + context.gear_dict['output_analysisid_dir'])
             os.mkdir(context.gear_dict['output_analysisid_dir'])
 
             # Run the actual command this gear was created for
-            result = sp.run(context.gear_dict['command_line'], 
-                        env = context.gear_dict['environ'])
+            result = sp.run(context.gear_dict['command_line'],
+                            env=context.gear_dict['environ'])
             log.debug(repr(result))
 
         log.info('Return code: ' + str(result.returncode))
@@ -302,19 +298,19 @@ def execute(context, log):
             if not context.config['gear-keep-output']:
 
                 shutil.rmtree(context.gear_dict['output_analysisid_dir'])
-                log.debug('removing output directory "' + 
+                log.debug('removing output directory "' +
                           context.gear_dict['output_analysisid_dir'] + '"')
 
             else:
-                log.info('NOT removing output directory "' + 
-                          context.gear_dict['output_analysisid_dir'] + '"')
+                log.info('NOT removing output directory "' +
+                         context.gear_dict['output_analysisid_dir'] + '"')
 
         else:
             log.info('Output directory does not exist so it cannot be removed')
 
         ret = result.returncode
 
-        if len(context.gear_dict['warnings']) > 0 :
+        if len(context.gear_dict['warnings']) > 0:
             msg = 'Previous warnings:\n'
             for err in context.gear_dict['warnings']:
                 if str(type(err)).split("'")[1] == 'str':
@@ -324,7 +320,7 @@ def execute(context, log):
                     msg += '  ' + str(type(err)).split("'")[1] + ': ' + str(err) + '\n'
             log.info(msg)
 
-        if len(context.gear_dict['errors']) > 0 :
+        if len(context.gear_dict['errors']) > 0:
             msg = 'Previous errors:\n'
             for err in context.gear_dict['errors']:
                 if str(type(err)).split("'")[1] == 'str':
@@ -335,19 +331,20 @@ def execute(context, log):
             log.info(msg)
             ret = 1
 
-        log.info('BIDS App Gear is done.  Returning '+str(ret))
+        log.info('BIDS App Gear is done.  Returning ' + str(ret))
         os.sys.exit(ret)
- 
+
 
 if __name__ == '__main__':
+    GEAR_COMMAND = '/code/extract_FA.py'
 
     context = flywheel.GearContext()
 
     log = initialize(context)
 
-    # create_command(context, log)
-    #
-    # if len(context.gear_dict['errors']) == 0:
-    #     set_up_data(context, log)
-    #
-    # execute(context, log)
+    create_command(context, log)
+
+    if len(context.gear_dict['errors']) == 0:
+        set_up_data(context, log)
+
+    execute(context, log)
