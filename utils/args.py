@@ -24,7 +24,7 @@ def get_inputs_and_args(context):
     # 1) Process Inputs
 
     # This is here because one way to pass the license is by an input
-    find_freesurfer_license(context, '/opt/freesurfer/license.txt')
+    # find_freesurfer_license(context, '/opt/freesurfer/license.txt')
 
     # 2) Process Configuration (config, rest of command-line parameters)
     config = context.config
