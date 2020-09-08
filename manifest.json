@@ -82,7 +82,7 @@
   "environment": {
     "PYTHONUNBUFFERED": "1"
   },
-  "command": "python /code/extract_FA.py",
+  "command": "/usr/local/anaconda/bin/python3 run.py",
   "author": "Franz Liem",
   "license": "MIT",
   "source": "https://github.com/dynage/extract-fa-gear",
