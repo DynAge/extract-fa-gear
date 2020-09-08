@@ -12,8 +12,8 @@ RUN apt-get update && \
 RUN npm install -g bids-validator@1.4.0
 
 # This pip is now from conda
-RUN pip install flywheel-sdk==12.0.0 \
-      flywheel-bids==0.8.2 \
+RUN pip install flywheel-sdk==12.4.2 \
+      flywheel-bids==0.9.1 \
       psutil==5.6.3 && \
     rm -rf /root/.cache/pip
 
