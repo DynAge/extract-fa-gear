@@ -51,90 +51,91 @@ def initialize(context):
 
     context.log_config() # not configuring the log but logging the config
 
-    # Instantiate custom gear dictionary to hold "gear global" info
-    context.gear_dict = {}
-
-    # The main command line command to be run (just command, no arguments):
-    context.gear_dict['COMMAND'] = '/run.py'
-
-    # Keep a list of errors and warning to print all in one place at end of log
-    # Any errors will prevent the command from running and will cause exit(1)
-    context.gear_dict['errors'] = []  
-    context.gear_dict['warnings'] = []
-
-    # get # cpu's to set --n_cpus argument to /run.py
-    cpu_count = os.cpu_count()
-    log.info('os.cpu_count() = ' + str(cpu_count))
-    context.gear_dict['cpu_count'] = cpu_count
-
-    mem_gb = psutil.virtual_memory().available / (1024 ** 3)
-    log.info('psutil.virtual_memory().available= {:4.1f} GiB'.format(mem_gb))
-    context.gear_dict['mem_gb'] = mem_gb
-
-    # Get level of run from destination's parent: subject or session
-    fw = context.client
-    dest_container = fw.get(context.destination['id'])
-    context.gear_dict['run_level'] = dest_container.parent.type
-    log.info('Running at the ' + context.gear_dict['run_level'] + ' level.')
-
-    project_id = dest_container.parents.project
-    context.gear_dict['project_id'] = project_id
-    if project_id:
-        project = fw.get(project_id)
-        context.gear_dict['project_label'] = project.label
-        context.gear_dict['project_label_safe'] = \
-            make_file_name_safe(project.label, '_')
-    else:
-        context.gear_dict['project_label'] = 'unknown_project'
-        context.gear_dict['project_label_safe'] = 'unknown_project'
-        log.warning('Project label is ' + context.gear_dict['project_label'])
-
-    subject_id = dest_container.parents.subject
-    context.gear_dict['subject_id'] = subject_id
-    if subject_id:
-        subject = fw.get(subject_id)
-        context.gear_dict['subject_code'] = subject.code
-        context.gear_dict['subject_code_safe'] = \
-            make_file_name_safe(subject.code, '_')
-    else:
-        context.gear_dict['subject_code'] = 'unknown_subject'
-        context.gear_dict['subject_code_safe'] = 'unknown_subject'
-        log.warning('Subject code is ' + context.gear_dict['subject_code'])
-
-    session_id = dest_container.parents.session
-    context.gear_dict['session_id'] = session_id
-    if session_id:
-        session = fw.get(session_id)
-        context.gear_dict['session_label'] = session.label
-        context.gear_dict['session_label_safe'] = \
-            make_file_name_safe(session.label, '_')
-    else:
-        context.gear_dict['session_label'] = 'unknown_session'
-        context.gear_dict['session_label_safe'] = 'unknown_session'
-        log.warning('Session label is ' + context.gear_dict['session_label'])
-
-    # Set first part of result zip file names based on the above file safe names
-    set_zip_head(context)
-
-    # the usual BIDS path:
-    bids_path = os.path.join(context.work_dir, 'bids')
-    context.gear_dict['bids_path'] = bids_path
-
-    # in the output/ directory, add extra analysis_id directory name for easy
-    #  zipping of final outputs to return.
-    context.gear_dict['output_analysisid_dir'] = \
-        context.output_dir + '/' + context.destination['id']
-
-    # grab environment for gear
-    with open('/tmp/gear_environ.json', 'r') as f:
-        environ = json.load(f)
-        context.gear_dict['environ'] = environ
-
-        # Add environment to log if debugging
-        kv = ''
-        for k, v in environ.items():
-            kv += k + '=' + v + ' '
-        log.debug('Environment: ' + kv)
+    log.debug(context.gear_dict)
+    # # Instantiate custom gear dictionary to hold "gear global" info
+    # context.gear_dict = {}
+    #
+    # # The main command line command to be run (just command, no arguments):
+    # context.gear_dict['COMMAND'] = '/run.py'
+    #
+    # # Keep a list of errors and warning to print all in one place at end of log
+    # # Any errors will prevent the command from running and will cause exit(1)
+    # context.gear_dict['errors'] = []
+    # context.gear_dict['warnings'] = []
+    #
+    # # get # cpu's to set --n_cpus argument to /run.py
+    # cpu_count = os.cpu_count()
+    # log.info('os.cpu_count() = ' + str(cpu_count))
+    # context.gear_dict['cpu_count'] = cpu_count
+    #
+    # mem_gb = psutil.virtual_memory().available / (1024 ** 3)
+    # log.info('psutil.virtual_memory().available= {:4.1f} GiB'.format(mem_gb))
+    # context.gear_dict['mem_gb'] = mem_gb
+    #
+    # # Get level of run from destination's parent: subject or session
+    # fw = context.client
+    # dest_container = fw.get(context.destination['id'])
+    # context.gear_dict['run_level'] = dest_container.parent.type
+    # log.info('Running at the ' + context.gear_dict['run_level'] + ' level.')
+    #
+    # project_id = dest_container.parents.project
+    # context.gear_dict['project_id'] = project_id
+    # if project_id:
+    #     project = fw.get(project_id)
+    #     context.gear_dict['project_label'] = project.label
+    #     context.gear_dict['project_label_safe'] = \
+    #         make_file_name_safe(project.label, '_')
+    # else:
+    #     context.gear_dict['project_label'] = 'unknown_project'
+    #     context.gear_dict['project_label_safe'] = 'unknown_project'
+    #     log.warning('Project label is ' + context.gear_dict['project_label'])
+    #
+    # subject_id = dest_container.parents.subject
+    # context.gear_dict['subject_id'] = subject_id
+    # if subject_id:
+    #     subject = fw.get(subject_id)
+    #     context.gear_dict['subject_code'] = subject.code
+    #     context.gear_dict['subject_code_safe'] = \
+    #         make_file_name_safe(subject.code, '_')
+    # else:
+    #     context.gear_dict['subject_code'] = 'unknown_subject'
+    #     context.gear_dict['subject_code_safe'] = 'unknown_subject'
+    #     log.warning('Subject code is ' + context.gear_dict['subject_code'])
+    #
+    # session_id = dest_container.parents.session
+    # context.gear_dict['session_id'] = session_id
+    # if session_id:
+    #     session = fw.get(session_id)
+    #     context.gear_dict['session_label'] = session.label
+    #     context.gear_dict['session_label_safe'] = \
+    #         make_file_name_safe(session.label, '_')
+    # else:
+    #     context.gear_dict['session_label'] = 'unknown_session'
+    #     context.gear_dict['session_label_safe'] = 'unknown_session'
+    #     log.warning('Session label is ' + context.gear_dict['session_label'])
+    #
+    # # Set first part of result zip file names based on the above file safe names
+    # set_zip_head(context)
+    #
+    # # the usual BIDS path:
+    # bids_path = os.path.join(context.work_dir, 'bids')
+    # context.gear_dict['bids_path'] = bids_path
+    #
+    # # in the output/ directory, add extra analysis_id directory name for easy
+    # #  zipping of final outputs to return.
+    # context.gear_dict['output_analysisid_dir'] = \
+    #     context.output_dir + '/' + context.destination['id']
+    #
+    # # grab environment for gear
+    # with open('/tmp/gear_environ.json', 'r') as f:
+    #     environ = json.load(f)
+    #     context.gear_dict['environ'] = environ
+    #
+    #     # Add environment to log if debugging
+    #     kv = ''
+    #     for k, v in environ.items():
+    #         kv += k + '=' + v + ' '
+    #     log.debug('Environment: ' + kv)
 
     return log
 
@@ -344,9 +345,9 @@ if __name__ == '__main__':
 
     log = initialize(context)
 
-    create_command(context, log)
-
-    if len(context.gear_dict['errors']) == 0:
-        set_up_data(context, log)
-
-    execute(context, log)
+    # create_command(context, log)
+    #
+    # if len(context.gear_dict['errors']) == 0:
+    #     set_up_data(context, log)
+    #
+    # execute(context, log)
