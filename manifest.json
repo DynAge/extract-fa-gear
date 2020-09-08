@@ -2,12 +2,12 @@
   "name": "extract-fa-gear",
   "label": "extract-fa-gear",
   "description": "extract-fa-gear",
-  "version": "dev3.0.0.1_v4.rc1",
+  "version": "dev4.0.0.1_v4.rc1",
   "custom": {
-    "docker-image": "dynage/extract-fa-gear:dev3.0.0.1_v4.rc1",
+    "docker-image": "dynage/extract-fa-gear:dev4.0.0.1_v4.rc1",
     "gear-builder": {
       "category": "analysis",
-      "image": "dynage/extract-fa-gear:dev3.0.0.1_v4.rc1"
+      "image": "dynage/extract-fa-gear:dev4.0.0.1_v4.rc1"
     },
     "flywheel": {
       "suite": "BIDS Apps"
