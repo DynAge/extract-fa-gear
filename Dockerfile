@@ -1,4 +1,4 @@
-FROM fliem/extract_fa:v4.rc1
+FROM fliem/extract_fa:v4
 
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
@@ -23,7 +23,7 @@ WORKDIR ${FLYWHEEL}
 
 # Save docker environ
 ENV PYTHONUNBUFFERED 1
-RUN python -c 'import os, json; f = open("/tmp/gear_environ.json", "w"); json.dump(dict(os.environ), f)' 
+RUN python -c 'import os, json; f = open("/tmp/gear_environ.json", "w"); json.dump(dict(os.environ), f)'
 
 # Copy executable/manifest to Gear
 COPY manifest.json ${FLYWHEEL}/manifest.json
