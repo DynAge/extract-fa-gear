@@ -37,7 +37,10 @@ from utils.results.zip_intermediate import zip_all_intermediate_output
 from utils.results.zip_intermediate import zip_intermediate_selected
 
 import utils.dry_run
+from subprocess import check_output
 
+ip = check_output(['hostname', '--all-ip-addresses']).split(" ")[0]
+print(f"Running on {ip}")
 print(f'{sys.executable}\nPython {sys.version_info}')
 
 
@@ -195,7 +198,7 @@ def set_up_data(context, log):
         # list folders: The list of folders to include (otherwise all folders) e.g. ['anat', 'func']
         # **kwargs: Additional arguments to pass to download_bids_dir
 
-        folders_to_load = []
+        folders_to_load = DOWNLOAD_MODALITIES
 
         if context.gear_dict['run_level'] == 'project':
 
@@ -337,6 +340,7 @@ def execute(context, log):
 
 if __name__ == '__main__':
     GEAR_COMMAND = '/code/extract_FA.py'
+    DOWNLOAD_MODALITIES = ["anat", "dwi"]  # [] for all
 
     context = flywheel.GearContext()
 

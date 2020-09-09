@@ -2,12 +2,12 @@
   "name": "extract-fa-gear",
   "label": "extract-fa-gear",
   "description": "extract-fa-gear",
-  "version": "dev5.0.0.1_v4.rc1",
+  "version": "0.0.2_v4",
   "custom": {
-    "docker-image": "dynage/extract-fa-gear:dev5.0.0.1_v4.rc1",
+    "docker-image": "dynage/extract-fa-gear:0.0.2_v4",
     "gear-builder": {
       "category": "analysis",
-      "image": "dynage/extract-fa-gear:dev5.0.0.1_v4.rc1"
+      "image": "dynage/extract-fa-gear:0.0.2_v4"
     },
     "flywheel": {
       "suite": "BIDS Apps"
@@ -49,7 +49,7 @@
                         ]
     },
     "gear-run-bids-validation": {
-      "default": true,
+      "default": false,
       "description": "Gear will run BIDS validation after downloading data.  If validation fails and gear-abort-on-bids-error is true, <command> will NOT be run.",
       "type": "boolean"
     },
@@ -86,5 +86,5 @@
   "author": "Franz Liem",
   "license": "MIT",
   "source": "https://github.com/dynage/extract-fa-gear",
-  "url": "https://github.com/dynage/extract-fa-gear"
+  "url": "https://github.com/fliem/extract_FA"
 }
