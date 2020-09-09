@@ -37,10 +37,7 @@ from utils.results.zip_intermediate import zip_all_intermediate_output
 from utils.results.zip_intermediate import zip_intermediate_selected
 
 import utils.dry_run
-from subprocess import check_output
 
-ip = check_output(['hostname', '--all-ip-addresses']).split(" ")[0]
-print(f"Running on {ip}")
 print(f'{sys.executable}\nPython {sys.version_info}')
 
 
