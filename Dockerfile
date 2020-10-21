@@ -1,4 +1,4 @@
-FROM fliem/extract_fa:v4
+FROM fliem/extract_fa:v4.fix
 
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
